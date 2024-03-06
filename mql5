@@ -1,0 +1,111 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                              KT Volume Profile MT5|
+//|                                          Developer: Forex Robot Easy Team|
+//|                                          Website: forexroboteasy.com|
+//+------------------------------------------------------------------+
+
+// Define global variables
+datetime startTime; // Start time for volume profile calculation
+datetime endTime;   // End time for volume profile calculation
+int pocIndex;       // Index of the Point of Control (POC)
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   // Initialize global variables
+   startTime = 0;
+   endTime = 0;
+   pocIndex = -1;
+   
+   // Add necessary comments to the code
+   // ...
+   
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator deinitialization function                       |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   // Add necessary comments to the code
+   // ...
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+{
+   // Check if volume profile calculation is required
+   if(startTime == 0 || endTime == 0)
+   {
+      // Calculate start and end time based on specific time periods
+      startTime = Time[0] - PeriodSeconds() * 60; // Previous minute
+      endTime = Time[0];                          // Current minute
+      
+      // Calculate volume profile data
+      double volumeProfile[];
+      ArrayResize(volumeProfile, rates_total);
+      for(int i = 0; i < rates_total; i++)
+      {
+         // Check if time is within the specified range
+         if(time[i] >= startTime && time[i] <= endTime)
+         {
+            // Accumulate volume data
+            volumeProfile[i] = volume[i];
+         }
+         else
+         {
+            // Reset volume data outside the specified range
+            volumeProfile[i] = 0;
+         }
+      }
+      
+      // Calculate the Point of Control (POC)
+      double maxVolume = 0;
+      for(int i = 0; i < rates_total; i++)
+      {
+         if(volumeProfile[i] > maxVolume)
+         {
+            maxVolume = volumeProfile[i];
+            pocIndex = i;
+         }
+      }
+   }
+   
+   // Display volume accumulation data on the y-axis
+   double maxVolume = ArrayMaximum(volume);
+   double minVolume = ArrayMinimum(volume);
+   double yAxisStep = (maxVolume - minVolume) / 10;
+   for(int i = 0; i < 10; i++)
+   {
+      double yAxisValue = minVolume + yAxisStep * i;
+      // Display yAxisValue on the chart
+      // ...
+   }
+   
+   // Display trading activity over specific time periods and price levels
+   // ...
+   
+   // Display the Point of Control (POC) as a support/resistance level
+   if(pocIndex != -1)
+   {
+      // Display POC price level on the chart
+      // ...
+   }
+   
+   return(rates_total);
+}
